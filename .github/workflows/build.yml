@@ -1,0 +1,61 @@
+name: Build Windows Release
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ x64, Win32 ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build EverythingVS (Release | ${{ matrix.platform }})
+        run: msbuild EverythingVS.sln /p:Configuration=Release /p:Platform=${{ matrix.platform }} /m /nologo
+
+      - name: Package portable ZIP
+        shell: pwsh
+        run: |
+          $outDir = "bin/${{ matrix.platform }}/Release"
+          $zipName = "EverythingVS-${{ matrix.platform }}.zip"
+          Compress-Archive -Path "$outDir/EverythingVS.exe", "$outDir/Everything.ini", "LICENSE", "README.md" -DestinationPath $zipName -Force
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: EverythingVS-${{ matrix.platform }}
+          path: EverythingVS-${{ matrix.platform }}.zip
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/EverythingVS-x64/EverythingVS-x64.zip
+            dist/EverythingVS-Win32/EverythingVS-Win32.zip

@@ -1,0 +1,42 @@
+# Visual Studio / MSBuild artifacts
+.vs/
+bin/
+obj/
+x64/
+Win32/
+Debug/
+Release/
+*.user
+*.suo
+*.sln.docstates
+*.VC.db
+*.VC.opendb
+*.ipch
+*.pdb
+*.ilk
+*.obj
+*.tlog
+*.log
+*.pch
+*.idb
+*.res
+*.aps
+*.ncb
+*.sdf
+*.opensdf
+*.cache
+
+# EverythingVS runtime files
+Everything.db
+*.efu
+*.csv
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.bak
+
+# Local publish helper
+publish_to_github.bat
